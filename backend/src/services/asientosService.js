@@ -20,6 +20,12 @@ function validarDetalles(detalles) {
     if (debe < 0 || haber < 0) {
       throw new ErrorNegocio(400, 'Los montos no pueden ser negativos');
     }
+    if (debe > 0 && haber > 0) {
+      throw new ErrorNegocio(400, 'Una línea de detalle no puede tener Debe y Haber a la vez');
+    }
+    if (debe === 0 && haber === 0) {
+      throw new ErrorNegocio(400, 'Una línea de detalle debe tener un monto en Debe o en Haber');
+    }
     totalDebe += debe;
     totalHaber += haber;
   });
@@ -30,15 +36,19 @@ function validarDetalles(detalles) {
 }
 
 async function validarCuentasExisten(detalles) {
-  if (!db.CuentaContable) {
-    return;
-  }
-  for (const linea of detalles) {
-    const cuenta = await db.CuentaContable.findByPk(linea.idCuenta);
-    if (!cuenta) {
-      throw new ErrorNegocio(404, `La cuenta ${linea.idCuenta} no existe`);
+  const idsCuenta = [...new Set(detalles.map((linea) => linea.idCuenta))];
+
+  const [filas] = await db.sequelize.query(
+    'SELECT id_cuenta FROM cuentas_contables WHERE id_cuenta IN (:ids)',
+    { replacements: { ids: idsCuenta } },
+  );
+  const idsEncontrados = filas.map((fila) => fila.id_cuenta);
+
+  idsCuenta.forEach((idCuenta) => {
+    if (!idsEncontrados.includes(idCuenta)) {
+      throw new ErrorNegocio(404, `La cuenta ${idCuenta} no existe`);
     }
-  }
+  });
 }
 
 async function siguienteNumeroAsiento() {
@@ -51,6 +61,10 @@ async function crearAsiento(datos, idUsuarioRegistro) {
 
   if (!fechaAsiento || !concepto) {
     throw new ErrorNegocio(400, 'fechaAsiento y concepto son obligatorios');
+  }
+
+  if (!idUsuarioRegistro) {
+    throw new ErrorNegocio(400, 'idUsuarioRegistro es obligatorio');
   }
 
   validarDetalles(detalles);

@@ -32,7 +32,8 @@ async function obtener(req, res) {
 
 async function crear(req, res) {
   try {
-    const asiento = await service.crearAsiento(req.body, req.usuario.id);
+    const idUsuarioRegistro = req.usuario ? req.usuario.id : req.body.idUsuarioRegistro;
+    const asiento = await service.crearAsiento(req.body, idUsuarioRegistro);
     res.status(201).json({ ok: true, data: asiento });
   } catch (error) {
     manejarError(error, res);
