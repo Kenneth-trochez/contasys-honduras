@@ -1,6 +1,7 @@
 const express = require('express');
 const cors = require('cors');
 const sequelize = require('./config/database');
+const asientosRoutes = require('./routes/asientos');
 
 require('dotenv').config();
 
@@ -15,6 +16,8 @@ app.get('/api/health', (req, res) => {
     message: 'ContaSys API funcionando',
   });
 });
+
+app.use('/api/asientos', asientosRoutes);
 
 const PORT = process.env.PORT || 4000;
 
