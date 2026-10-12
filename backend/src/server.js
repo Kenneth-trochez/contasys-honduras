@@ -1,9 +1,11 @@
+
 require('dotenv').config();
 const express = require('express');
 const cors = require('cors');
 const sequelize = require('./config/database');
 const asientosRoutes = require('./routes/asientos');
 const facturaRoutes = require('./routes/factura.routes');
+const tercerosRoutes = require('./routes/terceros');
 
 const app = express();
 
@@ -19,6 +21,7 @@ app.get('/api/health', (req, res) => {
 
 app.use('/api/asientos', asientosRoutes);
 app.use('/api/facturas', facturaRoutes);
+app.use('/api/terceros', tercerosRoutes);
 
 const PORT = process.env.PORT || 4000;
 
