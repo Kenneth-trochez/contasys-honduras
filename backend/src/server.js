@@ -6,6 +6,7 @@ const sequelize = require('./config/database');
 const asientosRoutes = require('./routes/asientos');
 const facturaRoutes = require('./routes/factura.routes');
 const tercerosRoutes = require('./routes/terceros');
+const cuentasRoutes = require('./routes/cuentas');
 
 const app = express();
 
@@ -22,6 +23,7 @@ app.get('/api/health', (req, res) => {
 app.use('/api/asientos', asientosRoutes);
 app.use('/api/facturas', facturaRoutes);
 app.use('/api/terceros', tercerosRoutes);
+app.use('/api/cuentas', cuentasRoutes);
 
 const PORT = process.env.PORT || 4000;
 
