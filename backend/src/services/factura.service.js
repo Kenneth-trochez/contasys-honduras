@@ -1,4 +1,4 @@
-const { Factura, DetalleFactura, Tercero, Inventario, sequelize } = require('../models');
+const { Factura, DetalleFactura, sequelize } = require('../models');
 
 const TASA_ISV = 0.15;
 
@@ -7,67 +7,74 @@ class FacturaService {
   static calcularTotales(detalles) {
     let subtotal = 0;
     const detallesProcesados = detalles.map(det => {
-      const subtotalItem = Number((det.cantidad * det.precioUnitario).toFixed(2));
-      subtotal += subtotalItem;
-      return { ...det, subtotal: subtotalItem };
+      const subtotalLinea = Number((det.cantidad * det.precio_unitario).toFixed(2));
+      subtotal += subtotalLinea;
+      return { ...det, subtotal_linea: subtotalLinea };
     });
 
-    const isv = Number((subtotal * TASA_ISV).toFixed(2));
-    const total = Number((subtotal + isv).toFixed(2));
+    const impuestoIsv = Number((subtotal * TASA_ISV).toFixed(2));
+    const total = Number((subtotal + impuestoIsv).toFixed(2));
 
-    return { subtotal, isv, total, detallesProcesados };
+    return { subtotal, impuestoIsv, total, detallesProcesados };
   }
 
-  static async crear(data) {
+  static async crearFactura(data) {
     const transaction = await sequelize.transaction();
     try {
-      const tercero = await Tercero.findByPk(data.terceroId, { transaction });
-      if (!tercero) {
-        const err = new Error('El tercero especificado no existe.');
-        err.status = 404;
-        throw err;
-      }
-
-      const existeFactura = await Factura.findOne({ where: { numeroFactura: data.numeroFactura }, transaction });
-      if (existeFactura) {
+      const existe = await Factura.findOne({ where: { numero_factura: data.numero_factura }, transaction });
+      if (existe) {
         const err = new Error('El número de factura ya se encuentra registrado.');
         err.status = 409;
         throw err;
       }
 
-      const { subtotal, isv, total, detallesProcesados } = this.calcularTotales(data.detalles);
+      const { subtotal, impuestoIsv, total, detallesProcesados } = this.calcularTotales(data.detalles);
 
-      const nuevaFactAquí tienes la implementación técnica completa y lista para ser integrada en el proyecto backend **ContaSys** (Node.js / Express / Sequelize o Prisma / MySQL), cumpliendo rigurosamente con todas las reglas de negocio, validaciones y pruebas solicitadas.
+      const nuevaFactura = await Factura.create({
+        numero_factura: data.numero_factura,
+        cai: data.cai,
+        fecha_emision: data.fecha_emision || new Date(),
+        id_tercero: data.id_tercero,
+        id_usuario_emisor: data.id_usuario_emisor,
+        subtotal,
+        impuesto_isv: impuestoIsv,
+        total,
+        estado: 'Emitida'
+      }, { transaction });
 
----
+      const detallesConId = detallesProcesados.map(d => ({
+        id_factura: nuevaFactura.id_factura, // <--- Aquí debe usar id_factura
+        id_producto: d.id_producto || null,
+        descripcion_item: d.descripcion_item,
+        cantidad: d.cantidad,
+        precio_unitario: d.precio_unitario,
+        subtotal_linea: d.subtotal_linea
+      }));
 
-### 1. Modelo de Datos (Database Schema)
+      await DetalleFactura.bulkCreate(detallesConId, { transaction });
 
-Si usas SQL puro o Sequelize/Prisma, la estructura relacional requiere dos tablas principales: `facturas` y `factura_detalles`.
+      await transaction.commit();
+      return await this.obtenerFacturaPorId(nuevaFactura.id_factura); // <--- Aquí también
+    } catch (error) {
+      await transaction.rollback();
+      throw error;
+    }
+  }
 
-```sql
-CREATE TABLE facturas (
-  id INT AUTO_INCREMENT PRIMARY KEY,
-  numero_factura VARCHAR(50) UNIQUE NOT NULL,
-  cai VARCHAR(100) NOT NULL,
-  tercero_id INT NOT NULL,
-  fecha DATETIME DEFAULT CURRENT_TIMESTAMP,
-  estado ENUM('EMITIDA', 'ANULADA') DEFAULT 'EMITIDA',
-  subtotal DECIMAL(12,2) NOT NULL DEFAULT 0.00,
-  isv DECIMAL(12,2) NOT NULL DEFAULT 0.00,
-  total DECIMAL(12,2) NOT NULL DEFAULT 0.00,
-  created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-  updated_at DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-  FOREIGN KEY (tercero_id) REFERENCES terceros(id)
-);
+  static async obtenerFacturas() {
+    return await Factura.findAll();
+  }
 
-CREATE TABLE factura_detalles (
-  id INT AUTO_INCREMENT PRIMARY KEY,
-  factura_id INT NOT NULL,
-  producto_id INT NULL, -- Opcional según módulo de inventario
-  descripcion VARCHAR(255) NOT NULL,
-  cantidad INT NOT NULL,
-  precio_unitario DECIMAL(12,2) NOT NULL,
-  subtotal DECIMAL(12,2) NOT NULL,
-  FOREIGN KEY (factura_id) REFERENCES facturas(id) ON DELETE CASCADE
-);
+  static async obtenerFacturaPorId(id) {
+    const factura = await Factura.findByPk(id);
+    if (!factura) {
+      const err = new Error('Factura no encontrada.');
+      err.status = 404;
+      throw err;
+    }
+    const detalles = await DetalleFactura.findAll({ where: { id_factura: id } });
+    return { ...factura.toJSON(), detalles };
+  }
+}
+
+module.exports = FacturaService;
