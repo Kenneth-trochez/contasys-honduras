@@ -1,44 +1,22 @@
-
 require('dotenv').config();
 const express = require('express');
 const cors = require('cors');
-const sequelize = require('./config/database');
-const asientosRoutes = require('./routes/asientos');
-const facturaRoutes = require('./routes/factura.routes');
-const tercerosRoutes = require('./routes/terceros');
+const { sequelize } = require('./models');
 
 const app = express();
-
 app.use(cors());
 app.use(express.json());
 
-app.get('/api/health', (req, res) => {
-  res.json({
-    success: true,
-    message: 'ContaSys API funcionando',
-  });
+app.use('/api/auth', require('./routes/auth.routes.js'));
+app.use('/api/roles', require('./routes/roles.routes.js'));
+app.use('/api/usuarios', require('./routes/usuarios.routes.js'));
+app.get('/', (req,res)=> res.json({ok:true}));
+
+const PORT = 4000;
+app.listen(PORT, () => {
+  console.log('Servidor en http://localhost:' + PORT);
 });
 
-app.use('/api/asientos', asientosRoutes);
-app.use('/api/facturas', facturaRoutes);
-app.use('/api/terceros', tercerosRoutes);
-
-const PORT = process.env.PORT || 4000;
-
-async function startServer() {
-  try {
-    await sequelize.authenticate();
-
-    console.log('Conexión a MySQL establecida correctamente.');
-
-    app.listen(PORT, () => {
-      console.log(`Servidor ejecutándose en http://localhost:${PORT}`);
-    });
-  } catch (error) {
-    console.error('Error al conectar con MySQL:');
-    console.error(error.message);
-    process.exit(1);
-  }
-}
-
-startServer();
+sequelize.authenticate()
+  .then(() => console.log('DB OK'))
+  .catch(e => console.log('Error DB:', e.message));

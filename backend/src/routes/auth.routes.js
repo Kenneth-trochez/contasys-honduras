@@ -1,14 +1,9 @@
-const { Router } = require('express');
-const { login, getMe, getRoles, getUsuarios, crearUsuario } = require('../controllers/auth.controller');
-const verificarToken = require('../middlewares/auth.middleware');
-const verificarRol = require('../middlewares/roles.middleware');
-
-const router = Router();
+const express = require('express');
+const router = express.Router();
+const { login, me } = require('../controllers/auth.controller');
+const authMiddleware = require('../middlewares/auth.middleware');
 
 router.post('/login', login);
-router.get('/me', verificarToken, getMe);
-router.get('/roles', verificarToken, verificarRol('admin'), getRoles);
-router.get('/usuarios', verificarToken, verificarRol('admin'), getUsuarios);
-router.post('/usuarios', verificarToken, verificarRol('admin'), crearUsuario);
+router.get('/me', authMiddleware, me);
 
 module.exports = router;
