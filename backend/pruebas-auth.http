@@ -1,0 +1,12 @@
+### HU-02 LOGIN
+POST http://localhost:4000/api/auth/login
+Content-Type: application/json
+
+{
+  "email": "admin@contasys.hn",
+  "password": "Admin123!"
+}
+
+### HU-02 ME - debe dar 200 OK
+GET http://localhost:4000/api/auth/me
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MSwiZW1haWwiOiJhZG1pbkBjb250YXN5cy5obiIsInJvbGUiOiJBZG1pbmlzdHJhZG9yIn0
