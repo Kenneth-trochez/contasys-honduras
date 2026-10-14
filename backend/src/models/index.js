@@ -1,26 +1,21 @@
-const fs = require('fs');
-const path = require('path');
 const { Sequelize, DataTypes } = require('sequelize');
 const sequelize = require('../config/database');
 
-const db = {};
+const Rol = require('./Rol')(sequelize, DataTypes);
+const Usuario = require('./Usuario')(sequelize, DataTypes);
 
-fs.readdirSync(__dirname)
-  .filter((archivo) => archivo !== 'index.js' && archivo.endsWith('.js'))
-  .forEach((archivo) => {
-  if (archivo === 'Tercero.js') return;
-
-  const modelo = require(path.join(__dirname, archivo))(sequelize, DataTypes);
-  db[modelo.name] = modelo;
+// Un usuario pertenece a un Rol
+Usuario.belongsTo(Rol, { 
+  foreignKey: 'id_rol', 
+  targetKey: 'id_rol', 
+  as: 'rol' 
 });
 
-Object.keys(db).forEach((nombreModelo) => {
-  if (typeof db[nombreModelo].associate === 'function') {
-    db[nombreModelo].associate(db);
-  }
+// Un Rol tiene muchos Usuarios
+Rol.hasMany(Usuario, { 
+  foreignKey: 'id_rol', 
+  sourceKey: 'id_rol', 
+  as: 'usuarios' 
 });
 
-db.sequelize = sequelize;
-db.Sequelize = Sequelize;
-
-module.exports = db;
+module.exports = { sequelize, Rol, Usuario };

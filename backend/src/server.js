@@ -1,4 +1,3 @@
-
 require('dotenv').config();
 const express = require('express');
 const cors = require('cors');
@@ -11,10 +10,13 @@ const productosRoutes = require('./routes/productos');
 const movimientosRoutes = require('./routes/movimientos');
 
 const app = express();
-
 app.use(cors());
 app.use(express.json());
 
+app.use('/api/auth', require('./routes/auth.routes.js'));
+app.use('/api/roles', require('./routes/roles.routes.js'));
+app.use('/api/usuarios', require('./routes/usuarios.routes.js'));
+app.get('/', (req,res)=> res.json({ok:true}));
 app.get('/api/health', (req, res) => {
   res.json({
     success: true,
@@ -29,22 +31,11 @@ app.use('/api/cuentas', cuentasRoutes);
 app.use('/api/productos', productosRoutes);
 app.use('/api/inventario', movimientosRoutes);
 
-const PORT = process.env.PORT || 4000;
+const PORT = 4000;
+app.listen(PORT, () => {
+  console.log('Servidor en http://localhost:' + PORT);
+});
 
-async function startServer() {
-  try {
-    await sequelize.authenticate();
-
-    console.log('Conexión a MySQL establecida correctamente.');
-
-    app.listen(PORT, () => {
-      console.log(`Servidor ejecutándose en http://localhost:${PORT}`);
-    });
-  } catch (error) {
-    console.error('Error al conectar con MySQL:');
-    console.error(error.message);
-    process.exit(1);
-  }
-}
-
-startServer();
+sequelize.authenticate()
+  .then(() => console.log('DB OK'))
+  .catch(e => console.log('Error DB:', e.message));
