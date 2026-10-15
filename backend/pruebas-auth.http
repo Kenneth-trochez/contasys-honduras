@@ -8,5 +8,6 @@ Content-Type: application/json
 }
 
 ### HU-02 ME - debe dar 200 OK
+### Copia el token que devuelve /login y pégalo después de Bearer
 GET http://localhost:4000/api/auth/me
-Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MSwiZW1haWwiOiJhZG1pbkBjb250YXN5cy5obiIsInJvbGUiOiJBZG1pbmlzdHJhZG9yIn0
+Authorization: Bearer {{token}}

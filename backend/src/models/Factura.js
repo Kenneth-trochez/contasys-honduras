@@ -48,5 +48,12 @@ module.exports = (sequelize, DataTypes) => {
     timestamps: false
   });
 
+  Factura.associate = (models) => {
+    Factura.hasMany(models.DetalleFactura, {
+      foreignKey: 'id_factura',
+      as: 'detalles'
+    });
+  };
+
   return Factura;
 };
