@@ -1,5 +1,6 @@
 
 const terceroService = require('../services/tercero.service');
+const ErrorNegocio = require('../utils/errorNegocio');
 const { UniqueConstraintError, ValidationError } = require('sequelize');
 
 const listar = async (req, res) => {
@@ -102,6 +103,14 @@ const cambiarEstado = async (req, res) => {
 };
 
 const manejarError = (res, error) => {
+  if (error instanceof ErrorNegocio) {
+    return res.status(error.status).json({
+      success: false,
+      message: error.message,
+      ...(error.errores ? { errors: error.errores } : {}),
+    });
+  }
+
   if (error instanceof UniqueConstraintError) {
     return res.status(409).json({
       success: false,
