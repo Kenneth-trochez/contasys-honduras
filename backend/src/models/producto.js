@@ -61,7 +61,7 @@ module.exports = (sequelize, DataTypes) => {
     }
     if (db.DetalleFactura) {
       Producto.hasMany(db.DetalleFactura, {
-        foreignKey: 'idProducto',
+        foreignKey: 'id_producto',
         as: 'detallesFactura',
       });
     }
