@@ -8,10 +8,14 @@ const db = {};
 fs.readdirSync(__dirname)
   .filter((archivo) => archivo !== 'index.js' && archivo.endsWith('.js'))
   .forEach((archivo) => {
-    const exportado = require(path.join(__dirname, archivo));
-    const esFabrica = typeof exportado === 'function' && !(exportado.prototype instanceof Sequelize.Model);
-    const modelo = esFabrica ? exportado(sequelize, DataTypes) : exportado;
-    db[modelo.name] = modelo;
+    const modeloDef = require(path.join(__dirname, archivo));
+    
+    if (typeof modeloDef === 'function' && modeloDef.prototype instanceof Sequelize.Model === false) {
+      const modelo = modeloDef(sequelize, DataTypes);
+      db[modelo.name] = modelo;
+    } else {
+      db[modeloDef.name] = modeloDef;
+    }
   });
 
 if (db.Usuario && db.Rol) {

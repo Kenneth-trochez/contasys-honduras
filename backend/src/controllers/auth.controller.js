@@ -5,6 +5,10 @@ const jwt = require('jsonwebtoken');
 const login = async (req, res) => {
   try {
     const { email, password } = req.body;
+    if (!email || !password) {
+      return res.status(400).json({ ok: false, message: 'Email y password son requeridos' });
+    }
+
     const usuario = await Usuario.findOne({ 
       where: { email }, 
       include: [{ model: Rol, as: 'rol' }] 
@@ -16,7 +20,11 @@ const login = async (req, res) => {
     const valid = await bcrypt.compare(password, usuario.password_hash);
     if (!valid) return res.status(401).json({ ok: false, message: "Password incorrecta" });
 
-    const token = jwt.sign({ id: usuario.id_usuario, id_rol: usuario.id_rol }, process.env.JWT_SECRET || 'secret123', { expiresIn: '8h' });
+    const token = jwt.sign(
+      { id: usuario.id_usuario, id_rol: usuario.id_rol },
+      process.env.JWT_SECRET || 'contasys_secret_2024',
+      { expiresIn: process.env.JWT_EXPIRES_IN || '8h' }
+    );
 
     return res.json({ ok: true, token, usuario: { id_usuario: usuario.id_usuario, nombre_completo: usuario.nombre_completo, email: usuario.email, rol: usuario.rol } });
   } catch (error) {
