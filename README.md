@@ -5,6 +5,7 @@ Sistema contable web para PYMES. Proyecto universitario de UNICAH.
 ## Tecnologías
 
 - Node.js
+- TypeScript
 - Express
 - Sequelize
 - MySQL
@@ -41,14 +42,18 @@ Luego instalar las dependencias:
 
 npm install
 
-Las migraciones y seeders se ejecutarán cuando el backend esté implementado:
+El backend está escrito en TypeScript (modo estricto). El código fuente está en `backend/src` (archivos `.ts`) y se compila a `backend/dist`.
 
-npx sequelize-cli db:migrate
-npx sequelize-cli db:seed:all
-
-Para iniciar el servidor:
+Para iniciar el servidor en desarrollo (se reinicia solo al guardar):
 
 npm run dev
+
+Otros comandos:
+
+npm run typecheck   # revisa los tipos sin generar archivos
+npm run build       # compila TypeScript a dist/
+npm start           # ejecuta la versión compilada (dist/server.js)
+npm run db:migrate  # compila y ejecuta las migraciones de dist/migrations
 
 3. Frontend
 
