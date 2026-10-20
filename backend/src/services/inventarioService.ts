@@ -3,9 +3,9 @@ import db from '../models';
 import { MovimientoInventario, TipoMovimiento } from '../models/MovimientoInventario';
 import { Producto } from '../models/Producto';
 import ErrorNegocio from '../utils/errorNegocio';
+import { ESTADOS_PRODUCTO, validarDatosProducto, validarFiltroEstado } from '../validators/inventario.validator';
 import { Decimal, EstadoActivo } from '../types/comunes';
 
-const ESTADOS_PRODUCTO: EstadoActivo[] = ['Activo', 'Inactivo'];
 const TIPOS_MOVIMIENTO: TipoMovimiento[] = ['Entrada', 'Salida', 'Ajuste'];
 
 type Id = number | string;
@@ -43,6 +43,7 @@ export interface ResultadoMovimiento {
 // ---------- Productos ----------
 
 export async function listarProductos(filtros: FiltrosProducto = {}): Promise<Producto[]> {
+  validarFiltroEstado(filtros.estado);
   const where: Record<string | symbol, unknown> = {};
   if (filtros.estado) {
     where.estado = filtros.estado;
@@ -62,21 +63,6 @@ export async function obtenerProductoPorId(idProducto: Id): Promise<Producto> {
     throw new ErrorNegocio(404, 'Producto no encontrado');
   }
   return producto;
-}
-
-function validarDatosProducto(datos: DatosProducto, { esCreacion }: { esCreacion: boolean }): void {
-  if (esCreacion && !datos.codigoProducto) {
-    throw new ErrorNegocio(400, 'codigoProducto es obligatorio');
-  }
-  if (esCreacion && !datos.nombreProducto) {
-    throw new ErrorNegocio(400, 'nombreProducto es obligatorio');
-  }
-  if (datos.precioVenta !== undefined && Number(datos.precioVenta) <= 0) {
-    throw new ErrorNegocio(400, 'precioVenta debe ser mayor que 0');
-  }
-  if (esCreacion && datos.precioVenta === undefined) {
-    throw new ErrorNegocio(400, 'precioVenta es obligatorio');
-  }
 }
 
 export async function crearProducto(datos: DatosProducto): Promise<Producto> {
