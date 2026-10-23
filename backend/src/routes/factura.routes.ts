@@ -2,6 +2,7 @@ import { NextFunction, Request, RequestHandler, Response, Router } from 'express
 import { ObjectSchema } from 'joi';
 import * as facturaController from '../controllers/factura.controller';
 import {
+  crearFacturaSchema,
   editarFacturaSchema,
   cambiarEstadoSchema,
 } from '../validators/factura.validator';
@@ -27,7 +28,7 @@ function validar(schema: ObjectSchema): RequestHandler {
 
 router.get('/', facturaController.obtenerFacturas);
 router.get('/:id', facturaController.obtenerFacturaPorId);
-router.post('/', facturaController.crearFactura);
+router.post('/', validar(crearFacturaSchema), facturaController.crearFactura);
 router.put('/:id', validar(editarFacturaSchema), facturaController.editarFactura);
 router.patch('/:id/estado', validar(cambiarEstadoSchema), facturaController.cambiarEstado);
 
