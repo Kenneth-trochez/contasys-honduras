@@ -17,22 +17,27 @@ router.get('/', authMiddleware, async (_req: Request, res: Response): Promise<vo
   }
 });
 
-// 2. POST /api/usuarios - Crear (Ya lo tienes con 201 y 409)
+// 2. POST /api/usuarios - Crear (201 y 409)
 router.post('/', authMiddleware, async (req: Request, res: Response): Promise<void> => {
   try {
     const { nombre_completo, email, password, id_rol } = req.body;
-    if (!nombre_completo ||!email ||!password ||!id_rol) {
+    if (!nombre_completo || !email || !password || !id_rol) {
       res.status(400).json({ ok: false, message: 'Faltan datos' });
       return;
     }
-    const [existe] = await sequelize.query(`SELECT id_usuario FROM usuarios WHERE email = '${email}'`);
-    if (existe.length > 0) {
+    // CORREGIDO: con replacements
+    const [existe] = await sequelize.query(
+      `SELECT id_usuario FROM usuarios WHERE email = :email`,
+      { replacements: { email } }
+    );
+    if ((existe as any[]).length > 0) {
       res.status(409).json({ ok: false, message: 'Email duplicado' });
       return;
     }
     const hash = await bcrypt.hash(password, 10);
     await sequelize.query(
-      `INSERT INTO usuarios (nombre_completo, email, password_hash, id_rol, estado, fecha_creacion) VALUES ('${nombre_completo}', '${email}', '${hash}', ${id_rol}, 'Activo', NOW())`
+      `INSERT INTO usuarios (nombre_completo, email, password_hash, id_rol, estado, fecha_creacion) VALUES (:nombre_completo, :email, :hash, :id_rol, 'Activo', NOW())`,
+      { replacements: { nombre_completo, email, hash, id_rol } }
     );
     res.status(201).json({ ok: true, message: 'Usuario creado correctamente' });
   } catch (e) {
@@ -47,19 +52,25 @@ router.put('/:id', authMiddleware, async (req: Request, res: Response): Promise<
     const { id } = req.params;
     const { nombre_completo, email, id_rol } = req.body;
 
-    if(!nombre_completo ||!email ||!id_rol){
+    if (!nombre_completo || !email || !id_rol) {
       res.status(400).json({ ok: false, message: 'Faltan datos' });
       return;
     }
 
-    // Validar email duplicado pero que no sea el mismo usuario
-    const [existe] = await sequelize.query(`SELECT id_usuario FROM usuarios WHERE email = '${email}' AND id_usuario!= ${id}`);
-    if (existe.length > 0) {
+    // CORREGIDO: con replacements
+    const [existe] = await sequelize.query(
+      `SELECT id_usuario FROM usuarios WHERE email = :email AND id_usuario != :id`,
+      { replacements: { email, id } }
+    );
+    if ((existe as any[]).length > 0) {
       res.status(409).json({ ok: false, message: 'Email duplicado' });
       return;
     }
 
-    await sequelize.query(`UPDATE usuarios SET nombre_completo='${nombre_completo}', email='${email}', id_rol=${id_rol} WHERE id_usuario=${id}`);
+    await sequelize.query(
+      `UPDATE usuarios SET nombre_completo=:nombre_completo, email=:email, id_rol=:id_rol WHERE id_usuario=:id`,
+      { replacements: { nombre_completo, email, id_rol, id } }
+    );
 
     res.json({ ok: true, message: 'Usuario actualizado correctamente' });
   } catch (e) {
@@ -71,14 +82,18 @@ router.put('/:id', authMiddleware, async (req: Request, res: Response): Promise<
 router.patch('/:id/estado', authMiddleware, async (req: Request, res: Response): Promise<void> => {
   try {
     const { id } = req.params;
-    const { estado } = req.body; // Debe ser 'Activo' o 'Inactivo'
+    const { estado } = req.body;
 
-    if(estado!== 'Activo' && estado!== 'Inactivo'){
+    if (estado !== 'Activo' && estado !== 'Inactivo') {
       res.status(400).json({ ok: false, message: 'Estado debe ser Activo o Inactivo' });
       return;
     }
 
-    await sequelize.query(`UPDATE usuarios SET estado='${estado}' WHERE id_usuario=${id}`);
+    // CORREGIDO: con replacements
+    await sequelize.query(
+      `UPDATE usuarios SET estado=:estado WHERE id_usuario=:id`,
+      { replacements: { estado, id } }
+    );
 
     res.json({ ok: true, message: `Usuario ${estado} correctamente` });
   } catch (e) {
