@@ -1,5 +1,6 @@
 const db = require('../models');
 const ErrorNegocio = require('../utils/errorNegocio');
+const { validarCuentaParaMovimiento } = require('./cuentas.service');
 
 const ESTADOS_VALIDOS = ['Borrador', 'Publicado', 'Anulado'];
 
@@ -35,20 +36,11 @@ function validarDetalles(detalles) {
   }
 }
 
-async function validarCuentasExisten(detalles) {
+async function validarCuentasParaMovimiento(detalles) {
   const idsCuenta = [...new Set(detalles.map((linea) => linea.idCuenta))];
-
-  const [filas] = await db.sequelize.query(
-    'SELECT id_cuenta FROM cuentas_contables WHERE id_cuenta IN (:ids)',
-    { replacements: { ids: idsCuenta } },
-  );
-  const idsEncontrados = filas.map((fila) => fila.id_cuenta);
-
-  idsCuenta.forEach((idCuenta) => {
-    if (!idsEncontrados.includes(idCuenta)) {
-      throw new ErrorNegocio(404, `La cuenta ${idCuenta} no existe`);
-    }
-  });
+  for (const idCuenta of idsCuenta) {
+    await validarCuentaParaMovimiento(idCuenta);
+  }
 }
 
 async function siguienteNumeroAsiento() {
@@ -68,7 +60,7 @@ async function crearAsiento(datos, idUsuarioRegistro) {
   }
 
   validarDetalles(detalles);
-  await validarCuentasExisten(detalles);
+  await validarCuentasParaMovimiento(detalles);
 
   const numeroAsiento = datos.numeroAsiento || (await siguienteNumeroAsiento());
 
@@ -123,7 +115,7 @@ async function actualizarAsiento(idAsiento, datos) {
 
   if (detalles) {
     validarDetalles(detalles);
-    await validarCuentasExisten(detalles);
+    await validarCuentasParaMovimiento(detalles);
   }
 
   return db.sequelize.transaction(async (t) => {
