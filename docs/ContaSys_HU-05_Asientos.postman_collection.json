@@ -1,0 +1,258 @@
+{
+	"info": {
+		"_postman_id": "c0nt4sys-hu05-asientos-direct-002",
+		"name": "ContaSys Honduras - HU-05 Asientos Contables",
+		"description": "Colección de pruebas completa para HU-05 Asientos Contables con URLs directas sin variables.",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "01. Crear asiento válido",
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n  \"fechaAsiento\": \"2026-10-13\",\n  \"concepto\": \"Apertura de caja chica\",\n  \"idUsuarioRegistro\": 1,\n  \"detalles\": [\n    {\n      \"idCuenta\": 1,\n      \"debe\": 5000.00,\n      \"haber\": 0\n    },\n    {\n      \"idCuenta\": 2,\n      \"debe\": 0,\n      \"haber\": 5000.00\n    }\n  ]\n}"
+				},
+				"url": "http://localhost:4000/api/asientos"
+			}
+		},
+		{
+			"name": "02. Crear asiento con varias líneas",
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n  \"fechaAsiento\": \"2026-10-13\",\n  \"concepto\": \"Compra de equipo con efectivo y banco\",\n  \"idUsuarioRegistro\": 1,\n  \"detalles\": [\n    {\n      \"idCuenta\": 1,\n      \"debe\": 10000.00,\n      \"haber\": 0\n    },\n    {\n      \"idCuenta\": 2,\n      \"debe\": 0,\n      \"haber\": 6000.00\n    },\n    {\n      \"idCuenta\": 3,\n      \"debe\": 0,\n      \"haber\": 4000.00\n    }\n  ]\n}"
+				},
+				"url": "http://localhost:4000/api/asientos"
+			}
+		},
+		{
+			"name": "03. Debe != Haber -> 400 Bad Request",
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n  \"fechaAsiento\": \"2026-10-13\",\n  \"concepto\": \"Asiento descuadrado (L10,000 vs L8,000)\",\n  \"idUsuarioRegistro\": 1,\n  \"detalles\": [\n    {\n      \"idCuenta\": 1,\n      \"debe\": 10000.00,\n      \"haber\": 0\n    },\n    {\n      \"idCuenta\": 2,\n      \"debe\": 0,\n      \"haber\": 8000.00\n    }\n  ]\n}"
+				},
+				"url": "http://localhost:4000/api/asientos"
+			}
+		},
+		{
+			"name": "04. Cuenta inexistente -> 404 Not Found",
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n  \"fechaAsiento\": \"2026-10-13\",\n  \"concepto\": \"Asiento con cuenta inexistente\",\n  \"idUsuarioRegistro\": 1,\n  \"detalles\": [\n    {\n      \"idCuenta\": 99999,\n      \"debe\": 1000.00,\n      \"haber\": 0\n    },\n    {\n      \"idCuenta\": 2,\n      \"debe\": 0,\n      \"haber\": 1000.00\n    }\n  ]\n}"
+				},
+				"url": "http://localhost:4000/api/asientos"
+			}
+		},
+		{
+			"name": "05. Montos negativos -> 400 Bad Request",
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n  \"fechaAsiento\": \"2026-10-13\",\n  \"concepto\": \"Asiento con monto negativo\",\n  \"idUsuarioRegistro\": 1,\n  \"detalles\": [\n    {\n      \"idCuenta\": 1,\n      \"debe\": -1000.00,\n      \"haber\": 0\n    },\n    {\n      \"idCuenta\": 2,\n      \"debe\": 0,\n      \"haber\": -1000.00\n    }\n  ]\n}"
+				},
+				"url": "http://localhost:4000/api/asientos"
+			}
+		},
+		{
+			"name": "06. Asiento sin detalle -> 400 Bad Request",
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n  \"fechaAsiento\": \"2026-10-13\",\n  \"concepto\": \"Asiento sin líneas\",\n  \"idUsuarioRegistro\": 1,\n  \"detalles\": []\n}"
+				},
+				"url": "http://localhost:4000/api/asientos"
+			}
+		},
+		{
+			"name": "07. Consultar asiento por ID",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": "http://localhost:4000/api/asientos/1"
+			}
+		},
+		{
+			"name": "08. Listar asientos",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": "http://localhost:4000/api/asientos"
+			}
+		},
+		{
+			"name": "09. Editar según estado - Intento fallido si no es Borrador -> 400",
+			"request": {
+				"method": "PUT",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n  \"concepto\": \"Intento de modificación en estado Publicado\"\n}"
+				},
+				"url": "http://localhost:4000/api/asientos/1"
+			}
+		},
+		{
+			"name": "10. Cambiar estado a Borrador para permitir edición",
+			"request": {
+				"method": "PATCH",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n  \"estado\": \"Borrador\"\n}"
+				},
+				"url": "http://localhost:4000/api/asientos/1/estado"
+			}
+		},
+		{
+			"name": "11. Editar asiento en estado Borrador exitosamente",
+			"request": {
+				"method": "PUT",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n  \"concepto\": \"Asiento modificado en Borrador\",\n  \"detalles\": [\n    {\n      \"idCuenta\": 1,\n      \"debe\": 3000.00,\n      \"haber\": 0\n    },\n    {\n      \"idCuenta\": 2,\n      \"debe\": 0,\n      \"haber\": 3000.00\n    }\n  ]\n}"
+				},
+				"url": "http://localhost:4000/api/asientos/1"
+			}
+		},
+		{
+			"name": "12. Anular asiento",
+			"request": {
+				"method": "PATCH",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n  \"estado\": \"Anulado\"\n}"
+				},
+				"url": "http://localhost:4000/api/asientos/1/estado"
+			}
+		},
+		{
+			"name": "13. Verificar correctamente sus detalles",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": "http://localhost:4000/api/asientos/1"
+			}
+		},
+		{
+			"name": "14. Crear asiento con cuenta inactiva -> 400 Bad Request",
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n  \"fechaAsiento\": \"2026-10-24\",\n  \"concepto\": \"Asiento con cuenta desactivada\",\n  \"idUsuarioRegistro\": 1,\n  \"detalles\": [\n    {\n      \"idCuenta\": 1,\n      \"debe\": 2000.00,\n      \"haber\": 0\n    },\n    {\n      \"idCuenta\": 999,\n      \"debe\": 0,\n      \"haber\": 2000.00\n    }\n  ]\n}",
+					"description": "La cuenta 999 debe existir con estado Inactivo. Se espera 400 con mensaje de cuenta inactiva."
+				},
+				"url": "http://localhost:4000/api/asientos"
+			}
+		},
+		{
+			"name": "15. Crear asiento con cuenta padre (no acepta movimientos) -> 400 Bad Request",
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n  \"fechaAsiento\": \"2026-10-24\",\n  \"concepto\": \"Asiento con cuenta padre que no acepta movimientos\",\n  \"idUsuarioRegistro\": 1,\n  \"detalles\": [\n    {\n      \"idCuenta\": 1,\n      \"debe\": 2000.00,\n      \"haber\": 0\n    },\n    {\n      \"idCuenta\": 998,\n      \"debe\": 0,\n      \"haber\": 2000.00\n    }\n  ]\n}",
+					"description": "La cuenta 998 debe existir con aceptaMovimientos=false. Se espera 400 con mensaje de que la cuenta no acepta movimientos."
+				},
+				"url": "http://localhost:4000/api/asientos"
+			}
+		},
+		{
+			"name": "16. Editar asiento con cuenta inactiva -> 400 Bad Request",
+			"request": {
+				"method": "PUT",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n  \"concepto\": \"Edición con cuenta desactivada\",\n  \"detalles\": [\n    {\n      \"idCuenta\": 1,\n      \"debe\": 1500.00,\n      \"haber\": 0\n    },\n    {\n      \"idCuenta\": 999,\n      \"debe\": 0,\n      \"haber\": 1500.00\n    }\n  ]\n}",
+					"description": "El asiento debe estar en Borrador. La cuenta 999 debe estar inactiva. Se espera 400."
+				},
+				"url": "http://localhost:4000/api/asientos/1"
+			}
+		}
+	]
+}
