@@ -2,6 +2,7 @@ import { Transaction } from 'sequelize';
 import db from '../models';
 import { AsientoContable, EstadoAsiento } from '../models/AsientoContable';
 import ErrorNegocio from '../utils/errorNegocio';
+import { validarCuentaParaMovimiento } from './cuentas.service';
 
 const ESTADOS_VALIDOS: EstadoAsiento[] = ['Borrador', 'Publicado', 'Anulado'];
 
@@ -52,20 +53,11 @@ function validarDetalles(detalles: unknown): asserts detalles is LineaAsientoEnt
   }
 }
 
-async function validarCuentasExisten(detalles: LineaAsientoEntrada[]): Promise<void> {
+async function validarCuentasParaMovimiento(detalles: LineaAsientoEntrada[]): Promise<void> {
   const idsCuenta = [...new Set(detalles.map((linea) => linea.idCuenta))];
-
-  const [filas] = await db.sequelize.query(
-    'SELECT id_cuenta FROM cuentas_contables WHERE id_cuenta IN (:ids)',
-    { replacements: { ids: idsCuenta } },
-  );
-  const idsEncontrados = (filas as Array<{ id_cuenta: number }>).map((fila) => fila.id_cuenta);
-
-  idsCuenta.forEach((idCuenta) => {
-    if (!idsEncontrados.includes(idCuenta as number)) {
-      throw new ErrorNegocio(404, `La cuenta ${idCuenta} no existe`);
-    }
-  });
+  for (const idCuenta of idsCuenta) {
+    await validarCuentaParaMovimiento(idCuenta as number);
+  }
 }
 
 async function siguienteNumeroAsiento(): Promise<number> {
@@ -94,7 +86,7 @@ export async function crearAsiento(datos: DatosAsiento, idUsuarioRegistro: numbe
   }
 
   validarDetalles(detalles);
-  await validarCuentasExisten(detalles);
+  await validarCuentasParaMovimiento(detalles);
 
   const numeroAsiento = datos.numeroAsiento || (await siguienteNumeroAsiento());
 
@@ -142,7 +134,7 @@ export async function actualizarAsiento(idAsiento: Id, datos: DatosAsiento): Pro
 
   if (detalles) {
     validarDetalles(detalles);
-    await validarCuentasExisten(detalles);
+    await validarCuentasParaMovimiento(detalles);
   }
 
   return db.sequelize.transaction(async (t) => {
