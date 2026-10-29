@@ -13,11 +13,14 @@ import movimientosRoutes from './routes/movimientos';
 import authRoutes from './routes/auth.routes';
 import rolesRoutes from './routes/roles.routes';
 import usuariosRoutes from './routes/usuarios.routes';
+import passport from './config/passport';
 import { CARPETA_UPLOADS, RUTA_PUBLICA_UPLOADS } from './config/archivos';
 
 const app = express();
+
 app.use(cors());
 app.use(express.json());
+app.use(passport.initialize());
 
 app.use('/api/auth', authRoutes);
 app.use('/api/roles', rolesRoutes);
