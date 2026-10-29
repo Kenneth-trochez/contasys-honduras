@@ -141,3 +141,6 @@ dist
 vite.config.js.timestamp-*
 vite.config.ts.timestamp-*
 .vite/
+
+# Imágenes subidas en local (Sprint 3): cada entorno crea la suya
+backend/uploads/
