@@ -5,6 +5,8 @@ import {
   editarFacturaSchema,
   cambiarEstadoSchema,
 } from '../validators/factura.validator';
+import authMiddleware from '../middlewares/auth.middleware';
+import verificarRol from '../middlewares/roles.middleware';
 
 const router = Router();
 
@@ -25,10 +27,10 @@ function validar(schema: ObjectSchema): RequestHandler {
   };
 }
 
-router.get('/', facturaController.obtenerFacturas);
-router.get('/:id', facturaController.obtenerFacturaPorId);
-router.post('/', facturaController.crearFactura);
-router.put('/:id', validar(editarFacturaSchema), facturaController.editarFactura);
-router.patch('/:id/estado', validar(cambiarEstadoSchema), facturaController.cambiarEstado);
+router.get('/', authMiddleware, verificarRol('administrador','contador','auxiliar contable'), facturaController.obtenerFacturas);
+router.get('/:id', authMiddleware, verificarRol('administrador','contador','auxiliar contable'), facturaController.obtenerFacturaPorId);
+router.post('/', authMiddleware, verificarRol('administrador','contador'), facturaController.crearFactura);
+router.put('/:id', authMiddleware, verificarRol('administrador','contador'), validar(editarFacturaSchema), facturaController.editarFactura);
+router.patch('/:id/estado', authMiddleware, verificarRol('administrador','contador'), validar(cambiarEstadoSchema), facturaController.cambiarEstado);
 
 export default router;

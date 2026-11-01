@@ -1,0 +1,163 @@
+{
+	"info": {
+		"_postman_id": "c0nt4sys-hu04-cuentas-001",
+		"name": "ContaSys Honduras - HU-04 Cuentas Contables",
+		"description": "Colección de pruebas para HU-04 Cuentas Contables. Incluye validación de que cuentas desactivadas no se usan en nuevos movimientos.",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "01. Listar cuentas",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": "http://localhost:4000/api/cuentas"
+			}
+		},
+		{
+			"name": "02. Listar cuentas activas",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "http://localhost:4000/api/cuentas?estado=Activo",
+					"protocol": "http",
+					"host": ["localhost"],
+					"port": "4000",
+					"path": ["api", "cuentas"],
+					"query": [{ "key": "estado", "value": "Activo" }]
+				}
+			}
+		},
+		{
+			"name": "03. Obtener cuenta por ID",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": "http://localhost:4000/api/cuentas/1"
+			}
+		},
+		{
+			"name": "04. Crear cuenta raíz válida",
+			"request": {
+				"method": "POST",
+				"header": [{ "key": "Content-Type", "value": "application/json" }],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n  \"codigo\": \"1\",\n  \"nombre\": \"Activo\",\n  \"tipoCuenta\": \"Activo\",\n  \"naturaleza\": \"Deudora\",\n  \"nivel\": 1,\n  \"aceptaMovimientos\": false\n}"
+				},
+				"url": "http://localhost:4000/api/cuentas"
+			}
+		},
+		{
+			"name": "05. Crear cuenta hija válida (acepta movimientos)",
+			"request": {
+				"method": "POST",
+				"header": [{ "key": "Content-Type", "value": "application/json" }],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n  \"codigo\": \"1.1\",\n  \"nombre\": \"Caja\",\n  \"tipoCuenta\": \"Activo\",\n  \"naturaleza\": \"Deudora\",\n  \"nivel\": 2,\n  \"idCuentaPadre\": 1,\n  \"aceptaMovimientos\": true\n}"
+				},
+				"url": "http://localhost:4000/api/cuentas"
+			}
+		},
+		{
+			"name": "06. Crear cuenta duplicada -> 409 Conflict",
+			"request": {
+				"method": "POST",
+				"header": [{ "key": "Content-Type", "value": "application/json" }],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n  \"codigo\": \"1\",\n  \"nombre\": \"Activo duplicado\",\n  \"tipoCuenta\": \"Activo\",\n  \"naturaleza\": \"Deudora\",\n  \"nivel\": 1,\n  \"aceptaMovimientos\": false\n}"
+				},
+				"url": "http://localhost:4000/api/cuentas"
+			}
+		},
+		{
+			"name": "07. Crear cuenta sin nivel 1 sin padre -> 400 Bad Request",
+			"request": {
+				"method": "POST",
+				"header": [{ "key": "Content-Type", "value": "application/json" }],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n  \"codigo\": \"2.1\",\n  \"nombre\": \"Cuenta huérfana nivel 2\",\n  \"tipoCuenta\": \"Pasivo\",\n  \"naturaleza\": \"Acreedora\",\n  \"nivel\": 2,\n  \"aceptaMovimientos\": true\n}"
+				},
+				"url": "http://localhost:4000/api/cuentas"
+			}
+		},
+		{
+			"name": "08. Actualizar cuenta",
+			"request": {
+				"method": "PUT",
+				"header": [{ "key": "Content-Type", "value": "application/json" }],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n  \"nombre\": \"Caja General\"\n}"
+				},
+				"url": "http://localhost:4000/api/cuentas/2"
+			}
+		},
+		{
+			"name": "09. Desactivar cuenta -> 200 OK",
+			"request": {
+				"method": "PATCH",
+				"header": [{ "key": "Content-Type", "value": "application/json" }],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n  \"estado\": \"Inactivo\"\n}"
+				},
+				"url": "http://localhost:4000/api/cuentas/2/estado"
+			}
+		},
+		{
+			"name": "10. [HU-04] Cuenta desactivada no se usa en nuevos movimientos - Crear asiento -> 400 Bad Request",
+			"request": {
+				"method": "POST",
+				"header": [{ "key": "Content-Type", "value": "application/json" }],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n  \"fechaAsiento\": \"2026-10-24\",\n  \"concepto\": \"Intento con cuenta desactivada\",\n  \"idUsuarioRegistro\": 1,\n  \"detalles\": [\n    {\n      \"idCuenta\": 1,\n      \"debe\": 1000.00,\n      \"haber\": 0\n    },\n    {\n      \"idCuenta\": 2,\n      \"debe\": 0,\n      \"haber\": 1000.00\n    }\n  ]\n}",
+					"description": "La cuenta 2 fue desactivada en el paso anterior. Se espera 400 con mensaje indicando que la cuenta está inactiva."
+				},
+				"url": "http://localhost:4000/api/asientos"
+			}
+		},
+		{
+			"name": "11. [HU-04] Cuenta padre (no acepta movimientos) no se usa en asientos -> 400 Bad Request",
+			"request": {
+				"method": "POST",
+				"header": [{ "key": "Content-Type", "value": "application/json" }],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n  \"fechaAsiento\": \"2026-10-24\",\n  \"concepto\": \"Intento con cuenta padre\",\n  \"idUsuarioRegistro\": 1,\n  \"detalles\": [\n    {\n      \"idCuenta\": 1,\n      \"debe\": 1000.00,\n      \"haber\": 0\n    },\n    {\n      \"idCuenta\": 1,\n      \"debe\": 0,\n      \"haber\": 1000.00\n    }\n  ]\n}",
+					"description": "La cuenta 1 es cuenta padre con aceptaMovimientos=false. Se espera 400 indicando que la cuenta no acepta movimientos."
+				},
+				"url": "http://localhost:4000/api/asientos"
+			}
+		},
+		{
+			"name": "12. Reactivar cuenta -> 200 OK",
+			"request": {
+				"method": "PATCH",
+				"header": [{ "key": "Content-Type", "value": "application/json" }],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n  \"estado\": \"Activo\"\n}"
+				},
+				"url": "http://localhost:4000/api/cuentas/2/estado"
+			}
+		},
+		{
+			"name": "13. Desactivar cuenta con hijas activas -> 409 Conflict",
+			"request": {
+				"method": "PATCH",
+				"header": [{ "key": "Content-Type", "value": "application/json" }],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n  \"estado\": \"Inactivo\"\n}"
+				},
+				"url": "http://localhost:4000/api/cuentas/1/estado"
+			}
+		}
+	]
+}

@@ -1,5 +1,6 @@
 import { Request, Response } from 'express';
 import * as service from '../services/inventarioService';
+import { guardarImagenProducto } from '../services/imagenProductoService';
 import ErrorNegocio from '../utils/errorNegocio';
 import { nombreError, textoQuery } from '../utils/peticion';
 
@@ -58,6 +59,16 @@ export async function cambiarEstadoProducto(req: Request<{ id: string }>, res: R
   try {
     const producto = await service.cambiarEstadoProducto(req.params.id, req.body.estado);
     res.json({ ok: true, data: producto });
+  } catch (error) {
+    manejarError(error, res);
+  }
+}
+
+// POST /api/productos/:id/imagen (multipart/form-data, campo "imagen")
+export async function subirImagenProducto(req: Request<{ id: string }>, res: Response): Promise<void> {
+  try {
+    const resultado = await guardarImagenProducto(req.params.id, req.file);
+    res.status(201).json({ ok: true, data: resultado.producto, imagen: resultado.imagen });
   } catch (error) {
     manejarError(error, res);
   }
