@@ -15,6 +15,7 @@ import rolesRoutes from './routes/roles.routes';
 import usuariosRoutes from './routes/usuarios.routes';
 import passport from './config/passport';
 import { CARPETA_UPLOADS, RUTA_PUBLICA_UPLOADS } from './config/archivos';
+import correoRoutes from './routes/correo.routes';
 
 const app = express();
 
@@ -25,6 +26,7 @@ app.use(passport.initialize());
 app.use('/api/auth', authRoutes);
 app.use('/api/roles', rolesRoutes);
 app.use('/api/usuarios', usuariosRoutes);
+app.use('/api/correo', correoRoutes);
 app.get('/', (_req: Request, res: Response) => { res.json({ ok: true }); });
 app.get('/api/health', (_req: Request, res: Response) => {
   res.json({
