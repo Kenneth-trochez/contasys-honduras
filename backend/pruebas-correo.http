@@ -1,0 +1,7 @@
+### Prueba del servicio de correo - debe dar 200 OK
+POST http://localhost:4000/api/correo/prueba
+Content-Type: application/json
+
+{
+  "para": "tu_correo@ejemplo.com"
+}

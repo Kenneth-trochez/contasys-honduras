@@ -12,6 +12,8 @@ export class Producto extends Model<InferAttributes<Producto>, InferCreationAttr
   declare stockActual: CreationOptional<Decimal>;
   declare stockMinimo: CreationOptional<Decimal>;
   declare estado: CreationOptional<EstadoActivo>;
+  // Ruta relativa de la imagen, p. ej. uploads/productos/7-1730250000-a1b2c3d4.jpg (null si no tiene).
+  declare imagen: CreationOptional<string | null>;
   declare fechaCreacion: CreationOptional<Date>;
 
   static inicializar(sequelize: Sequelize): typeof Producto {
@@ -57,6 +59,10 @@ export class Producto extends Model<InferAttributes<Producto>, InferCreationAttr
         type: DataTypes.ENUM('Activo', 'Inactivo'),
         allowNull: false,
         defaultValue: 'Activo',
+      },
+      imagen: {
+        type: DataTypes.STRING(255),
+        allowNull: true,
       },
       fechaCreacion: {
         type: DataTypes.DATE,
