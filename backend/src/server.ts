@@ -16,12 +16,19 @@ import usuariosRoutes from './routes/usuarios.routes';
 import passport from './config/passport';
 import { CARPETA_UPLOADS, RUTA_PUBLICA_UPLOADS } from './config/archivos';
 import correoRoutes from './routes/correo.routes';
+import swaggerUi from 'swagger-ui-express';
+import swaggerSpec from './config/swagger';
 
 const app = express();
 
 app.use(cors());
 app.use(express.json());
 app.use(passport.initialize());
+app.use(
+  '/api-docs',
+  swaggerUi.serve,
+  swaggerUi.setup(swaggerSpec)
+);
 
 app.use('/api/auth', authRoutes);
 app.use('/api/roles', rolesRoutes);
