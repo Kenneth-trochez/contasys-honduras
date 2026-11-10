@@ -28,13 +28,6 @@ function validar(schema: ObjectSchema): RequestHandler {
   };
 }
 
-router.get('/', facturaController.obtenerFacturas);
-router.get('/:id', facturaController.obtenerFacturaPorId);
-router.post('/', validar(crearFacturaSchema), facturaController.crearFactura);
-router.put('/:id', validar(editarFacturaSchema), facturaController.editarFactura);
-router.patch('/:id/estado', validar(cambiarEstadoSchema), facturaController.cambiarEstado);
-
-export default router;
 /**
  * @swagger
  * tags:
@@ -57,6 +50,37 @@ export default router;
  *         description: No autorizado (Token faltante o inválido)
  *       403:
  *         description: Prohibido (Sin permisos suficientes)
+ */
+router.get('/', authMiddleware, verificarRol('administrador', 'contador', 'auxiliar contable'), facturaController.obtenerFacturas);
+
+/**
+ * @swagger
+ * /api/facturas/{id}:
+ *   get:
+ *     summary: Obtener una factura por su ID
+ *     tags: [Facturas]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: integer
+ *         description: ID de la factura
+ *     responses:
+ *       200:
+ *         description: Factura encontrada con éxito
+ *       404:
+ *         description: Factura no encontrada
+ *       401:
+ *         description: No autorizado
+ */
+router.get('/:id', authMiddleware, verificarRol('administrador', 'contador', 'auxiliar contable'), facturaController.obtenerFacturaPorId);
+
+/**
+ * @swagger
+ * /api/facturas:
  *   post:
  *     summary: Crear una nueva factura
  *     tags: [Facturas]
@@ -121,29 +145,11 @@ export default router;
  *       401:
  *         description: No autorizado
  */
+router.post('/', authMiddleware, verificarRol('administrador', 'contador'), validar(crearFacturaSchema), facturaController.crearFactura);
 
 /**
  * @swagger
  * /api/facturas/{id}:
- *   get:
- *     summary: Obtener una factura por su ID
- *     tags: [Facturas]
- *     security:
- *       - bearerAuth: []
- *     parameters:
- *       - in: path
- *         name: id
- *         required: true
- *         schema:
- *           type: integer
- *         description: ID de la factura
- *     responses:
- *       200:
- *         description: Factura encontrada con éxito
- *       404:
- *         description: Factura no encontrada
- *       401:
- *         description: No autorizado
  *   put:
  *     summary: Actualizar una factura existente
  *     tags: [Facturas]
@@ -190,6 +196,7 @@ export default router;
  *       401:
  *         description: No autorizado
  */
+router.put('/:id', authMiddleware, verificarRol('administrador', 'contador'), validar(editarFacturaSchema), facturaController.editarFactura);
 
 /**
  * @swagger
@@ -229,3 +236,6 @@ export default router;
  *       401:
  *         description: No autorizado
  */
+router.patch('/:id/estado', authMiddleware, verificarRol('administrador', 'contador'), validar(cambiarEstadoSchema), facturaController.cambiarEstado);
+
+export default router;
