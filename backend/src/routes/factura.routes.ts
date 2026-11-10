@@ -6,6 +6,8 @@ import {
   editarFacturaSchema,
   cambiarEstadoSchema,
 } from '../validators/factura.validator';
+import authMiddleware from '../middlewares/auth.middleware';
+import verificarRol from '../middlewares/roles.middleware';
 
 const router = Router();
 

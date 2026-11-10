@@ -13,14 +13,27 @@ import movimientosRoutes from './routes/movimientos';
 import authRoutes from './routes/auth.routes';
 import rolesRoutes from './routes/roles.routes';
 import usuariosRoutes from './routes/usuarios.routes';
+import passport from './config/passport';
+import { CARPETA_UPLOADS, RUTA_PUBLICA_UPLOADS } from './config/archivos';
+import correoRoutes from './routes/correo.routes';
+import swaggerUi from 'swagger-ui-express';
+import swaggerSpec from './config/swagger';
 
 const app = express();
+
 app.use(cors());
 app.use(express.json());
+app.use(passport.initialize());
+app.use(
+  '/api-docs',
+  swaggerUi.serve,
+  swaggerUi.setup(swaggerSpec)
+);
 
 app.use('/api/auth', authRoutes);
 app.use('/api/roles', rolesRoutes);
 app.use('/api/usuarios', usuariosRoutes);
+app.use('/api/correo', correoRoutes);
 app.get('/', (_req: Request, res: Response) => { res.json({ ok: true }); });
 app.get('/api/health', (_req: Request, res: Response) => {
   res.json({
@@ -35,6 +48,9 @@ app.use('/api/terceros', tercerosRoutes);
 app.use('/api/cuentas', cuentasRoutes);
 app.use('/api/productos', productosRoutes);
 app.use('/api/inventario', movimientosRoutes);
+
+// Imágenes subidas (p. ej. GET /uploads/productos/<archivo>.jpg)
+app.use(RUTA_PUBLICA_UPLOADS, express.static(CARPETA_UPLOADS));
 
 const PORT = 4000;
 app.listen(PORT, () => {
