@@ -68,3 +68,38 @@ Content-Type: application/json
 {
   "estado": "Pagada"
 }
+
+### POST tercero inexistente - 404
+POST http://localhost:4000/api/facturas
+Content-Type: application/json
+
+{
+  "numero_factura": "FAC-PRUEBA-TERCERO-404",
+  "cai": "CAI-PRUEBA-TERCERO-404",
+  "id_tercero": 99999,
+  "id_usuario_emisor": 1,
+  "detalles": [
+    {
+      "descripcion_item": "Prueba de tercero inexistente",
+      "cantidad": 1,
+      "precio_unitario": 100
+    }
+  ]
+}
+
+### POST factura sin CAI - 400
+POST http://localhost:4000/api/facturas
+Content-Type: application/json
+
+{
+  "numero_factura": "FAC-PRUEBA-SIN-CAI-400",
+  "id_tercero": 1,
+  "id_usuario_emisor": 1,
+  "detalles": [
+    {
+      "descripcion_item": "Prueba de CAI obligatorio",
+      "cantidad": 1,
+      "precio_unitario": 100
+    }
+  ]
+}
