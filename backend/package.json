@@ -8,7 +8,7 @@
     "build": "tsc",
     "start": "node dist/server.js",
     "typecheck": "tsc --noEmit",
-    "db:migrate": "tsc && sequelize-cli db:migrate --migrations-path dist/migrations",
+    "db:migrate": "tsc && sequelize-cli db:migrate",
     "db:seed": "sequelize-cli db:seed:all"
   },
   "keywords": [],
