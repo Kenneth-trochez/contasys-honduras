@@ -1,5 +1,5 @@
 import { Transaction } from 'sequelize';
-import { Factura, DetalleFactura, Producto, MovimientoInventario, sequelize } from '../models';
+import { Factura, DetalleFactura, Producto, MovimientoInventario, Tercero, sequelize } from '../models';
 import { EstadoFactura } from '../models/Factura';
 import { httpError } from '../utils/httpError';
 import { Decimal } from '../types/comunes';
@@ -168,6 +168,11 @@ class FacturaService {
       const existe = await Factura.findOne({ where: { numero_factura: data.numero_factura as string }, transaction });
       if (existe) {
         throw httpError(409, 'El número de factura ya se encuentra registrado.');
+      }
+
+      const tercero = await Tercero.findByPk(data.id_tercero as number, { transaction });
+      if (!tercero || tercero.estado !== 'Activo') {
+        throw httpError(404, 'Tercero no encontrado o inactivo.');
       }
 
       const detallesNormalizados = this.normalizarDetalles(data.detalles);

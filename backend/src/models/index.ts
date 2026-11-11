@@ -10,9 +10,9 @@ import { Producto } from './Producto';
 import { Rol } from './Rol';
 import { Tercero } from './Tercero';
 import { Usuario } from './Usuario';
+import { TokenRecuperacion } from './TokenRecuperacion';
 
-// Todos los modelos del proyecto. Al agregar un modelo nuevo hay que registrarlo
-// aquí; TypeScript avisa si falta en `Db` o si el nombre no coincide.
+
 const modelos = {
   AsientoContable: AsientoContable.inicializar(sequelize),
   CuentaContable: CuentaContable.inicializar(sequelize),
@@ -24,6 +24,7 @@ const modelos = {
   Rol: Rol.inicializar(sequelize),
   Tercero: Tercero.inicializar(sequelize),
   Usuario: Usuario.inicializar(sequelize),
+  TokenRecuperacion: TokenRecuperacion.inicializar(sequelize),
 };
 
 export type Modelos = typeof modelos;
@@ -39,9 +40,33 @@ const db: Db = {
   Sequelize,
 };
 
-Usuario.belongsTo(Rol, { foreignKey: 'id_rol', targetKey: 'id_rol', as: 'rol' });
-Rol.hasMany(Usuario, { foreignKey: 'id_rol', sourceKey: 'id_rol', as: 'usuarios' });
+// Relaciones de usuarios y roles.
+Usuario.belongsTo(Rol, {
+  foreignKey: 'id_rol',
+  targetKey: 'id_rol',
+  as: 'rol',
+});
 
+Rol.hasMany(Usuario, {
+  foreignKey: 'id_rol',
+  sourceKey: 'id_rol',
+  as: 'usuarios',
+});
+
+// Relaciones de recuperación de contraseña.
+Usuario.hasMany(TokenRecuperacion, {
+  foreignKey: 'id_usuario',
+  sourceKey: 'id_usuario',
+  as: 'tokensRecuperacion',
+});
+
+TokenRecuperacion.belongsTo(Usuario, {
+  foreignKey: 'id_usuario',
+  targetKey: 'id_usuario',
+  as: 'usuario',
+});
+
+// Asociaciones de los demás modelos.
 AsientoContable.asociar(db);
 CuentaContable.asociar(db);
 DetalleAsiento.asociar(db);
@@ -63,6 +88,7 @@ export {
   Rol,
   Tercero,
   Usuario,
+  TokenRecuperacion,
 };
 
 export default db;
