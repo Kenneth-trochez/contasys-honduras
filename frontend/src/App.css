@@ -1,0 +1,25 @@
+/* Estilos propios de la aplicación ContaSys.
+   Los estilos base y componentes visuales provienen de AdminLTE 4 y Bootstrap 5. */
+
+.profile-avatar {
+  width: 76px;
+  height: 76px;
+  flex: 0 0 76px;
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  background: var(--bs-primary-bg-subtle);
+  color: var(--bs-primary);
+  font-size: 2.5rem;
+}
+
+.profile-label {
+  width: 34%;
+  background: var(--bs-tertiary-bg);
+}
+
+@media (max-width: 575.98px) {
+  .profile-label {
+    width: 42%;
+  }
+}
