@@ -162,7 +162,7 @@ class FacturaService {
     }
   }
 
-  static async crearFactura(data: DatosFactura): Promise<FacturaConDetalles> {
+  static async crearFactura(data: DatosFactura, idUsuarioEmisor: number): Promise<FacturaConDetalles> {
     const transaction = await sequelize.transaction();
     try {
       const existe = await Factura.findOne({ where: { numero_factura: data.numero_factura as string }, transaction });
@@ -183,7 +183,7 @@ class FacturaService {
         cai: data.cai as string,
         fecha_emision: data.fecha_emision || new Date(),
         id_tercero: data.id_tercero as number,
-        id_usuario_emisor: data.id_usuario_emisor as number,
+        id_usuario_emisor: idUsuarioEmisor,
         subtotal,
         impuesto_isv: impuestoIsv,
         total,
@@ -198,7 +198,7 @@ class FacturaService {
       await this.moverInventario({
         detalles: detallesProcesados,
         tipoMovimiento: 'Salida',
-        idUsuario: data.id_usuario_emisor as number,
+        idUsuario: idUsuarioEmisor,
         motivo: `Salida por factura ${nuevaFactura.numero_factura}`,
         transaction,
       });

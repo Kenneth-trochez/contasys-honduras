@@ -96,7 +96,6 @@ router.get('/:id', authMiddleware, verificarRol('administrador', 'contador', 'au
  *               - numero_factura
  *               - cai
  *               - id_tercero
- *               - id_usuario_emisor
  *               - detalles
  *             properties:
  *               numero_factura:
