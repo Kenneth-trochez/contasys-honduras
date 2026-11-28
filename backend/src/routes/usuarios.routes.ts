@@ -2,7 +2,12 @@ import { Request, Response, Router, NextFunction } from 'express';
 import bcrypt from 'bcryptjs';
 import { sequelize } from '../models';
 import authMiddleware from '../middlewares/auth.middleware';
-
+/**
+ * @swagger
+ * tags:
+ *   name: Seguridad
+ *   description: Gestión de roles y usuarios
+ */
 const router = Router();
 
 const mensajeError = (e: unknown): string => (e instanceof Error ? e.message : String(e));
@@ -19,6 +24,34 @@ const authorize = (...rolesPermitidos: number[]) => {
   };
 };
 
+/**
+ * @swagger
+ * /api/usuarios:
+ *   get:
+ *     summary: Listar usuarios
+ *     tags: [Seguridad]
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: Lista de usuarios obtenida exitosamente
+ *         content:
+ *           application/json:
+ *             example:
+ *               ok: true
+ *               usuarios:
+ *                 - id_usuario: 1
+ *                   nombre_completo: "Oscar Sanchez"
+ *                   email: "oscar@contasys.hn"
+ *                   id_rol: 1
+ *                   estado: "Activo"
+ *       401:
+ *         description: No autorizado, falta token o token inválido
+ *       403:
+ *         description: Acceso denegado, se requiere rol de Administrador
+ *       500:
+ *         description: Error del servidor
+ */
 // 1. GET /api/usuarios - Solo Admin
 router.get('/', authMiddleware, authorize(1), async (_req: Request, res: Response): Promise<void> => {
   try {
@@ -29,6 +62,42 @@ router.get('/', authMiddleware, authorize(1), async (_req: Request, res: Respons
   }
 });
 
+/**
+ * @swagger
+ * /api/usuarios:
+ *   post:
+ *     summary: Crear un usuario
+ *     tags: [Seguridad]
+ *     security:
+ *       - bearerAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           example:
+ *             nombre_completo: "Oscar Sanchez"
+ *             email: "oscar@contasys.hn"
+ *             password: "123456"
+ *             id_rol: 2
+ *     responses:
+ *       201:
+ *         description: Usuario creado correctamente
+ *         content:
+ *           application/json:
+ *             example:
+ *               ok: true
+ *               message: "Usuario creado correctamente"
+ *       400:
+ *         description: Faltan datos
+ *       401:
+ *         description: No autorizado
+ *       403:
+ *         description: Acceso denegado, se requiere rol de Administrador
+ *       409:
+ *         description: Email duplicado
+ *       500:
+ *         description: Error del servidor
+ */
 // 2. POST /api/usuarios - Solo Admin
 router.post('/', authMiddleware, authorize(1), async (req: Request, res: Response): Promise<void> => {
   try {
@@ -57,6 +126,43 @@ router.post('/', authMiddleware, authorize(1), async (req: Request, res: Respons
   }
 });
 
+/**
+ * @swagger
+ * /api/usuarios/{id}:
+ *   put:
+ *     summary: Actualizar un usuario
+ *     tags: [Seguridad]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: integer
+ *         description: ID del usuario
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           example:
+ *             nombre_completo: "Oscar Sanchez Actualizado"
+ *             email: "oscar@contasys.hn"
+ *             id_rol: 2
+ *     responses:
+ *       200:
+ *         description: Usuario actualizado correctamente
+ *       400:
+ *         description: Faltan datos
+ *       401:
+ *         description: No autorizado
+ *       403:
+ *         description: Acceso denegado, se requiere rol de Administrador
+ *       409:
+ *         description: Email duplicado
+ *       500:
+ *         description: Error del servidor
+ */
 // 3. PUT - Solo Admin
 router.put('/:id', authMiddleware, authorize(1), async (req: Request, res: Response): Promise<void> => {
   try {
@@ -84,6 +190,39 @@ router.put('/:id', authMiddleware, authorize(1), async (req: Request, res: Respo
   }
 });
 
+/**
+ * @swagger
+ * /api/usuarios/{id}/estado:
+ *   patch:
+ *     summary: Activar / Inactivar un usuario
+ *     tags: [Seguridad]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: integer
+ *         description: ID del usuario
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           example:
+ *             estado: "Inactivo"
+ *     responses:
+ *       200:
+ *         description: Estado actualizado correctamente
+ *       400:
+ *         description: Estado debe ser Activo o Inactivo
+ *       401:
+ *         description: No autorizado
+ *       403:
+ *         description: Acceso denegado, se requiere rol de Administrador
+ *       500:
+ *         description: Error del servidor
+ */
 // 4. PATCH estado - Solo Admin
 router.patch('/:id/estado', authMiddleware, authorize(1), async (req: Request, res: Response): Promise<void> => {
   try {

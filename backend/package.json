@@ -8,7 +8,7 @@
     "build": "tsc",
     "start": "node dist/server.js",
     "typecheck": "tsc --noEmit",
-    "db:migrate": "tsc && sequelize-cli db:migrate --migrations-path dist/migrations",
+    "db:migrate": "tsc && sequelize-cli db:migrate",
     "db:seed": "sequelize-cli db:seed:all"
   },
   "keywords": [],
@@ -28,7 +28,9 @@
     "passport": "^0.7.0",
     "passport-jwt": "^4.0.1",
     "sequelize": "^6.37.8",
-    "sharp": "^0.35.5"
+    "sharp": "^0.35.5",
+    "swagger-jsdoc": "^6.3.0",
+    "swagger-ui-express": "^5.0.1"
   },
   "devDependencies": {
     "@types/cors": "^2.8.19",
@@ -39,6 +41,8 @@
     "@types/nodemailer": "^8.0.2",
     "@types/passport": "^1.0.17",
     "@types/passport-jwt": "^4.0.1",
+    "@types/swagger-jsdoc": "^6.0.4",
+    "@types/swagger-ui-express": "^4.1.8",
     "sequelize-cli": "^6.6.5",
     "tsx": "^4.23.15",
     "typescript": "^5.9.3"
