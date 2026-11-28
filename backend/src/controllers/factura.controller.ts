@@ -27,7 +27,12 @@ export const obtenerFacturaPorId = async (req: Request<{ id: string }>, res: Res
 
 export const crearFactura = async (req: Request, res: Response): Promise<void> => {
   try {
-    const nuevaFactura = await FacturaService.crearFactura(req.body);
+    const idUsuarioEmisor = req.usuario?.id;
+    if (!idUsuarioEmisor) {
+      res.status(401).json({ mensaje: 'Usuario no autenticado' });
+      return;
+    }
+    const nuevaFactura = await FacturaService.crearFactura(req.body, idUsuarioEmisor);
     res.status(201).json(nuevaFactura);
   } catch (error) {
     responderError(res, error);
